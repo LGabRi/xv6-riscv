@@ -1,16 +1,35 @@
-Primer paso: Fork de repo del MIT.
+# Configuración del Entorno de Desarrollo para xv6 en Mac con Apple Silicon
 
-Segundo paso: Clonarlo en mi Mac
+## 1. Introducción
 
-Tercer paso: Crear una branch con "git checkout -b gabrielcaviedes-tarea-0"
+Este informe detalla los pasos seguidos para la instalación y configuración del entorno de desarrollo de xv6, en un equipo con procesador Apple Silicon (M2). Se incluyen las instrucciones para clonar el repositorio, crear una nueva rama de trabajo, instalar el toolchain de RISC-V utilizando Homebrew y verificar la correcta instalación del sistema.
 
-Cuarto paso: Instalar risc-v toolchain con homebrew con este repo: https://github.com/riscv-software-src/homebrew-riscv
+## 2. Pasos Realizados
 
-Quinto paso: Ejecutar $ brew tap riscv-software-src/riscv
+### 2.1. Fork del Repositorio Original de MIT
 
-Sexto paso: Ejecutar arch -arm64 brew install riscv-tools, en mi caso como tengo un Apple Silicon M2 lo hice con esto. En otro caso se hacía con este: $ brew install riscv-tools
+El primer paso consistió en realizar un fork del repositorio oficial de xv6 alojado en el MIT. Esto permite trabajar en una copia personal del proyecto:
 
-Septimo paso: Verificamos instalación: 
+- **Repositorio original**: [MIT xv6 Repository](https://github.com/mit-pdos/xv6-riscv).
+
+
+### 2.2. Clonado del Repositorio en el Entorno Local
+
+Una vez realizado el fork, se procedió a clonar el repositorio en el entorno local de la máquina:
+
+### Tercer paso 
+Crear una branch con "git checkout -b gabrielcaviedes-tarea-0"
+
+### Cuarto paso
+Instalar risc-v toolchain con homebrew con este repo: https://github.com/riscv-software-src/homebrew-riscv
+
+### Quinto paso:
+Ejecutar $ brew tap riscv-software-src/riscv
+
+### Sexto paso: 
+Ejecutar arch -arm64 brew install riscv-tools, en mi caso como tengo un Apple Silicon M2 lo hice con esto. En otro caso se hacía con este: $ brew install riscv-tools
+
+# Verificamos instalación
 
 (base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % ls
 LICENSE         Makefile        README          kernel          mkfs            user
