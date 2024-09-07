@@ -1,87 +1,100 @@
-# Configuración del Entorno de Desarrollo para xv6 en Mac con Apple Silicon
+# INFORME.md
 
-## 1. Introducción
+## Tarea 1: Implementación de Llamadas al Sistema en xv6
 
-Este informe detalla los pasos seguidos para la instalación y configuración del entorno de desarrollo de xv6, en un equipo con procesador Apple Silicon (M2). Se incluyen las instrucciones para clonar el repositorio, crear una nueva rama de trabajo, instalar el toolchain de RISC-V utilizando Homebrew y verificar la correcta instalación del sistema.
+### Objetivo
+El objetivo de esta tarea fue implementar y modificar llamadas al sistema en xv6. Se implementaron dos nuevas llamadas al sistema: `getppid()` para la Parte I y `getancestor(int)` para la Parte II.
 
-## 2. Pasos Realizados
+## Parte I: Implementación Básica - `getppid()`
 
-### 2.1. Fork del Repositorio Original de MIT
+### Descripción de la Llamada al Sistema `getppid()`
+La llamada al sistema `getppid()` retorna el ID del proceso padre (PID) del proceso que la invoca. Esta función es similar a `getpid()`, pero en lugar de devolver el PID del proceso actual, devuelve el PID de su padre.
 
-El primer paso consistió en realizar un fork del repositorio oficial de xv6 alojado en el MIT. Esto permite trabajar en una copia personal del proyecto:
+### Modificaciones Realizadas
 
-- **Repositorio original**: [MIT xv6 Repository](https://github.com/mit-pdos/xv6-riscv).
+1. **Implementación de la Función de Llamada al Sistema (`sysproc.c`)**:
+   Se agregó una nueva función en el archivo `sysproc.c` para manejar la lógica de `getppid()`. Esta función accede a la estructura de datos del proceso actual y retorna el PID de su proceso padre.
 
+2. **Declaración y Mapeo en la Tabla de Llamadas al Sistema (`syscall.c`)**:
+   Se declaró la nueva función en el archivo `syscall.c` y se añadió a la tabla de llamadas al sistema en el kernel para que pueda ser invocada desde el espacio de usuario.
 
-### 2.2. Clonado del Repositorio en el Entorno Local
+3. **Definición de un Número de Sistema Único (`syscall.h`)**:
+   Se definió un número único para la llamada al sistema `getppid` en el archivo `syscall.h`, asegurando que no haya conflictos con otras llamadas.
 
-Una vez realizado el fork, se procedió a clonar el repositorio en el entorno local de la máquina:
+4. **Actualización de los Archivos de Cabecera (`user.h`)**:
+   Se añadió la declaración de la función `getppid()` en el archivo de cabecera `user.h` para que los programas de usuario puedan invocar esta llamada al sistema.
 
-### Tercer paso 
-Crear una branch con "git checkout -b gabrielcaviedes-tarea-0"
+5. **Generación de Stubs para el Espacio de Usuario (`usys.pl`)**:
+   Se modificó el script `usys.pl` encargado de generar los stubs de las llamadas al sistema para incluir `getppid()`.
 
-### Cuarto paso
-Instalar risc-v toolchain con homebrew con este repo: https://github.com/riscv-software-src/homebrew-riscv
+6. **Programa de Prueba (`user/yosoytupadre.c`)**:
+   Se creó un programa de prueba llamado `yosoytupadre.c` en `user/` que invoca `getppid()` y muestra el PID del proceso padre. Este programa se agregó al sistema de archivos de xv6 y se compiló correctamente.
 
-### Quinto paso:
-Ejecutar $ brew tap riscv-software-src/riscv
+### Resultados de la Prueba
+El programa `yosoytupadre` se ejecutó correctamente en xv6, mostrando el PID del proceso padre como se esperaba. Esto se hizo compilando con un `make clean` y luego `make qemu`, para despues llamar a `yosoytupadre` directamente desde el shell. 
 
-### Sexto paso: 
-Ejecutar arch -arm64 brew install riscv-tools, en mi caso como tengo un Apple Silicon M2 lo hice con esto. En otro caso se hacía con este: $ brew install riscv-tools
+Al ejecutar `yosoytupadre` en la shell de xv6, la salida fue la siguiente:
 
-# Verificamos instalación
+```sh
+$ yosoytupadre
+El PID de mi padre es: 2
+Mi PID es 5
+```
 
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % ls
-LICENSE         Makefile        README          kernel          mkfs            user
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % echo "Hola xv6" 
-Hola xv6
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % cat README
-xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
-Version 6 (v6).  xv6 loosely follows the structure and style of v6,
-but is implemented for a modern RISC-V multiprocessor using ANSI C.
+## Parte II: Implementación Avanzada - `getancestor(int)`
 
-ACKNOWLEDGMENTS
+### Descripción de la Llamada al Sistema `getancestor(int)`
+La llamada al sistema `getancestor(int)` devuelve el PID del ancestro del proceso que la invoca, según el nivel especificado:
+- `getancestor(0)` retorna el PID del proceso que invoca la llamada.
+- `getancestor(1)` retorna el PID del proceso padre.
+- `getancestor(2)` retorna el PID del abuelo.
+- Si no hay suficientes ancestros, retorna `-1`.
 
-xv6 is inspired by John Lions's Commentary on UNIX 6th Edition (Peer
-to Peer Communications; ISBN: 1-57398-013-7; 1st edition (June 14,
-2000)).  See also https://pdos.csail.mit.edu/6.1810/, which provides
-pointers to on-line resources for v6.
+### Modificaciones Realizadas
 
-The following people have made contributions: Russ Cox (context switching,
-locking), Cliff Frey (MP), Xiao Yu (MP), Nickolai Zeldovich, and Austin
-Clements.
+1. **Implementación de la Función de Llamada al Sistema (`sysproc.c`)**:
+   Se añadió una nueva función en el archivo `sysproc.c` para manejar la lógica de `getancestor(int)`. Esta función recorre la cadena de procesos padres hasta llegar al ancestro indicado por el parámetro o hasta que no haya más ancestros disponibles.
 
-We are also grateful for the bug reports and patches contributed by
-Takahiro Aoyagi, Marcelo Arroyo, Silas Boyd-Wickizer, Anton Burtsev,
-carlclone, Ian Chen, Dan Cross, Cody Cutler, Mike CAT, Tej Chajed,
-Asami Doi,Wenyang Duan, eyalz800, Nelson Elhage, Saar Ettinger, Alice
-Ferrazzi, Nathaniel Filardo, flespark, Peter Froehlich, Yakir Goaron,
-Shivam Handa, Matt Harvey, Bryan Henry, jaichenhengjie, Jim Huang,
-Matúš Jókay, John Jolly, Alexander Kapshuk, Anders Kaseorg, kehao95,
-Wolfgang Keller, Jungwoo Kim, Jonathan Kimmitt, Eddie Kohler, Vadim
-Kolontsov, Austin Liew, l0stman, Pavan Maddamsetti, Imbar Marinescu,
-Yandong Mao, Matan Shabtay, Hitoshi Mitake, Carmi Merimovich, Mark
-Morrissey, mtasm, Joel Nider, Hayato Ohhashi, OptimisticSide,
-phosphagos, Harry Porter, Greg Price, RayAndrew, Jude Rich, segfault,
-Ayan Shafqat, Eldar Sehayek, Yongming Shen, Fumiya Shigemitsu, snoire,
-Taojie, Cam Tenny, tyfkda, Warren Toomey, Stephen Tu, Alissa Tung,
-Rafael Ubal, Amane Uehara, Pablo Ventura, Xi Wang, WaheedHafez,
-Keiichi Watanabe, Lucas Wolf, Nicolas Wolovick, wxdao, Grant Wu, x653,
-Jindong Zhang, Icenowy Zheng, ZhUyU1997, and Zou Chang Wei.
+2. **Declaración y Mapeo en la Tabla de Llamadas al Sistema (`syscall.c`)**:
+   Se declaró la nueva función `getancestor()` en `syscall.c` y se añadió a la tabla de llamadas al sistema en el kernel para que pueda ser invocada desde el espacio de usuario.
 
-The code in the files that constitute xv6 is
-Copyright 2006-2024 Frans Kaashoek, Robert Morris, and Russ Cox.
+3. **Definición de un Número de Sistema Único (`syscall.h`)**:
+   Se asignó un número único para la llamada al sistema `getancestor` en el archivo `syscall.h`, garantizando que no se superponga con otras llamadas al sistema.
 
-ERROR REPORTS
+4. **Actualización de los Archivos de Cabecera (`user.h`)**:
+   Se añadió la declaración de la función `getancestor(int)` en el archivo de cabecera `user.h` para que los programas de usuario puedan invocar esta llamada al sistema.
 
-Please send errors and suggestions to Frans Kaashoek and Robert Morris
-(kaashoek,rtm@mit.edu).  The main purpose of xv6 is as a teaching
-operating system for MIT's 6.1810, so we are more interested in
-simplifications and clarifications than new features.
+5. **Generación de Stubs para el Espacio de Usuario (`usys.pl`)**:
+   Se modificó `usys.pl`, el cual se encarga de generar los stubs de las llamadas al sistema para incluir `getancestor(int)`.
 
-BUILDING AND RUNNING XV6
+6. **Actualización del Programa de Prueba (`user/yosoytupadre.c`)**:
+   Se modificó el programa de prueba `yosoytupadre.c` en el directorio `user/` para incluir pruebas de la nueva llamada al sistema `getancestor(int)`. El programa ahora muestra el PID del proceso actual, del padre, del abuelo y maneja correctamente el caso en que no haya más ancestros.
 
-You will need a RISC-V "newlib" tool chain from
-https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
-riscv64-softmmu.  Once they are installed, and in your shell
-search path, you can run "make qemu".
+### Resultados de la Prueba
+Al ejecutar `yosoytupadre` en xv6, el programa mostró correctamente los PIDs correspondientes para los ancestros solicitados. La salida incluyó tanto el proceso padre como los ancestros hasta el nivel máximo disponible, y devolvió `-1` cuando se solicitó un nivel que no existe, verificando que la implementación de `getancestor(int)` es correcta.
+
+Al ejecutar `yosoytupadre` en la shell de xv6, la salida fue la siguiente:
+
+```sh
+El PID de mi padre es: 2
+Mi PID es 5
+Ancestro 0 (yo mismo): 5
+Ancestro 1 (padre): 2
+Ancestro 2 (abuelo): 1
+Ancestro no válido (-1): -1
+Proceso hijo: mi ancestro 0 es 6 (yo mismo)
+Proceso hijo: mi ancestro 1 es 5 (padre)
+Proceso hijo: mi ancestro 2 es 2 (abuelo)
+Proceso hijo: ancestro no válido (-1): 1
+```
+
+## Dificultades Encontradas y Soluciones
+
+1. **Errores de Compilación por Declaraciones Implícitas**:
+   Se encontró un error de compilación debido a declaraciones implícitas. Para resolver esto, se añadió la declaración de las funciones `getppid()` y `getancestor()` en el archivo de cabecera correspondiente (`user.h`).
+
+2. **Problemas de Vínculo (`undefined reference`)**:
+   Hubo errores de referencia indefinida al no mapear correctamente las funciones en la tabla de llamadas al sistema. Este problema se solucionó asegurando que todas las declaraciones y asignaciones en la tabla de llamadas al sistema estuvieran correctas.
+
+## Conclusión
+La implementación de las llamadas al sistema `getppid()` y `getancestor(int)` en xv6 fue exitosa. Ambas funciones funcionan según lo esperado y proporcionan las funcionalidades necesarias para interactuar con los procesos y sus ancestros en el sistema operativo.
