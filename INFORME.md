@@ -18,24 +18,53 @@ El primer paso consistió en realizar un fork del repositorio oficial de xv6 alo
 Una vez realizado el fork, se procedió a clonar el repositorio en el entorno local de la máquina:
 
 ### Tercer paso 
-Crear una branch con "git checkout -b gabrielcaviedes-tarea-0"
+Crear una branch con `$ git checkout -b gabrielcaviedes-tarea-0`
 
 ### Cuarto paso
 Instalar risc-v toolchain con homebrew con este repo: https://github.com/riscv-software-src/homebrew-riscv
 
 ### Quinto paso:
-Ejecutar $ brew tap riscv-software-src/riscv
+Ejecutar `$ brew tap riscv-software-src/riscv`
 
 ### Sexto paso: 
 Ejecutar arch -arm64 brew install riscv-tools, en mi caso como tengo un Apple Silicon M2 lo hice con esto. En otro caso se hacía con este: $ brew install riscv-tools
 
 # Verificamos instalación
 
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % ls
-LICENSE         Makefile        README          kernel          mkfs            user
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % echo "Hola xv6" 
-Hola xv6
-(base) gabrielcaviedes@MBP-de-Gabriel xv6-riscv % cat README
+### Hacemos un `make clean` para luego proceder a un `make qemu`
+
+### Tenemos esto al hacer las pruebas: 
+
+```sh
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ ls
+.              1 1 1024
+..             1 1 1024
+README         2 2 2403
+cat            2 3 35592
+echo           2 4 34448
+forktest       2 5 16264
+grep           2 6 39040
+init           2 7 34904
+kill           2 8 34368
+ln             2 9 34184
+ls             2 10 37712
+mkdir          2 11 34432
+rm             2 12 34416
+sh             2 13 57160
+stressfs       2 14 35304
+usertests      2 15 181208
+grind          2 16 50872
+wc             2 17 36584
+zombie         2 18 33768
+console        3 19 0
+$ echo "Hola xv6"
+"Hola xv6"
+$ cat README
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
 but is implemented for a modern RISC-V multiprocessor using ANSI C.
@@ -85,3 +114,4 @@ You will need a RISC-V "newlib" tool chain from
 https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
 riscv64-softmmu.  Once they are installed, and in your shell
 search path, you can run "make qemu".
+```
