@@ -91,3 +91,22 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64 sys_mprotect(void) {
+    uint64 addr;
+    int len;
+    argaddr(0, &addr);
+    argint(1, &len);
+    return (uint64)mprotect((void *)addr, len);
+}
+
+uint64 sys_munprotect(void) {
+    uint64 addr;
+    int len;
+    argaddr(0, &addr);
+    argint(1, &len);
+    return (uint64)munprotect((void *)addr, len);
+}
+
+extern int mprotect(void *addr, int len);
+extern int munprotect(void *addr, int len);

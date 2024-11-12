@@ -57,6 +57,7 @@ OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
+CFLAGS = -Wall -Werror -I. -Iuser
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 # CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
@@ -140,6 +141,8 @@ UPROGS=\
 	$U/_wc\
 	$U/_zombie\
 	$U/_prioritytest\
+	$U/_test_mprotect\
+
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
