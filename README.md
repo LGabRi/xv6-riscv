@@ -144,44 +144,48 @@ Esto permite que estas funciones sean visibles en otros archivos del kernel.
 Se implementaron las funciones `mprotect` y `munprotect`:
 
 ```c
-int mprotect(void *addr, int len) {
-    struct proc *p = myproc();
-    uint64 a = (uint64)addr;
-    uint64 end = a + len * PGSIZE;
+int mprotect(void *addr, int len)
+{
+  struct proc *p = myproc();
+  uint64 a = (uint64)addr;
+  uint64 end = a + len * PGSIZE;
 
-    if (a % PGSIZE != 0 || len < 1 || end > p->sz)
-        return -1;
+  if (a % PGSIZE != 0 || len < 1 || end > p->sz)
+    return -1;
 
-    pte_t *pte;
-    for (; a < end; a += PGSIZE) {
-        pte = walk(p->pagetable, a, 0);
-        if (pte == 0 || (*pte & PTE_V) == 0)
-            return -1;
-        *pte &= ~PTE_W;
-    }
+  pte_t *pte;
+  for (; a < end; a += PGSIZE)
+  {
+    pte = walk(p->pagetable, a, 0);
+    if (pte == 0 || (*pte & PTE_V) == 0)
+      return -1;
+    *pte &= ~PTE_W; 
+  }
 
-    sfence_vma();
-    return 0;
+  sfence_vma();
+  return 0;
 }
 
-int munprotect(void *addr, int len) {
-    struct proc *p = myproc();
-    uint64 a = (uint64)addr;
-    uint64 end = a + len * PGSIZE;
+int munprotect(void *addr, int len)
+{
+  struct proc *p = myproc();
+  uint64 a = (uint64)addr;
+  uint64 end = a + len * PGSIZE;
 
-    if (a % PGSIZE != 0 || len < 1 || end > p->sz)
-        return -1;
+  if (a % PGSIZE != 0 || len < 1 || end > p->sz)
+    return -1;
 
-    pte_t *pte;
-    for (; a < end; a += PGSIZE) {
-        pte = walk(p->pagetable, a, 0);
-        if (pte == 0 || (*pte & PTE_V) == 0)
-            return -1;
-        *pte |= PTE_W;
-    }
+  pte_t *pte;
+  for (; a < end; a += PGSIZE)
+  {
+    pte = walk(p->pagetable, a, 0);
+    if (pte == 0 || (*pte & PTE_V) == 0)
+      return -1;
+    *pte |= PTE_W;
+  }
 
-    sfence_vma();
-    return 0;
+  sfence_vma();
+  return 0;
 }
 ```
 mprotect: Marca las páginas como solo lectura deshabilitando el bit de escritura (PTE_W) en la PTE.
