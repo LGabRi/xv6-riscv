@@ -1,9 +1,15 @@
 // On-disk file system format.
 // Both the kernel and user programs use this header file.
+#ifndef FS_H
+#define FS_H
 
 
 #define ROOTINO  1   // root i-number
 #define BSIZE 1024  // block size
+
+#include "types.h"
+#include "sleeplock.h"   // Asegúrate de incluir sleeplock.h aquí
+#include "stat.h"
 
 // Disk layout:
 // [ boot block | super block | log | inode blocks |
@@ -28,6 +34,23 @@ struct superblock {
 #define NINDIRECT (BSIZE / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
 
+struct inode {
+  uint dev;           // Device number
+  uint inum;          // Inode number
+  int ref;            // Reference count
+  struct sleeplock lock; // protects everything below here
+  int valid;          // inode has been read from disk?
+
+  short type;         // copy of disk inode
+  short major;
+  short minor;
+  short nlink;
+  uint size;
+  uint addrs[NDIRECT+1];
+  
+  uint permission;     // Nuevo campo para los permisos (0: ninguno, 1: r, 2: w, 3: rw, 5: inmutable)
+};
+
 // On-disk inode structure
 struct dinode {
   short type;           // File type
@@ -37,6 +60,8 @@ struct dinode {
   uint size;            // Size of file (bytes)
   uint addrs[NDIRECT+1];   // Data block addresses
 };
+
+
 
 // Inodes per block.
 #define IPB           (BSIZE / sizeof(struct dinode))
@@ -58,3 +83,4 @@ struct dirent {
   char name[DIRSIZ];
 };
 
+#endif // FS_H

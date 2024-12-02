@@ -202,21 +202,26 @@ ialloc(uint dev, short type)
   struct buf *bp;
   struct dinode *dip;
 
-  for(inum = 1; inum < sb.ninodes; inum++){
+  for(inum = 1; inum < NINODE; inum++){
     bp = bread(dev, IBLOCK(inum, sb));
     dip = (struct dinode*)bp->data + inum%IPB;
-    if(dip->type == 0){  // a free inode
+    if(dip->type == 0){  // Un inodo libre
       memset(dip, 0, sizeof(*dip));
       dip->type = type;
-      log_write(bp);   // mark it allocated on the disk
+      bwrite(bp);   // Marca el inodo como asignado en disco
       brelse(bp);
-      return iget(dev, inum);
+
+      struct inode *ip = iget(dev, inum);
+      ilock(ip);
+      ip->permission = 3; // Inicializa con permisos de lectura/escritura
+      iunlock(ip);
+      return ip;
     }
     brelse(bp);
   }
-  printf("ialloc: no inodes\n");
-  return 0;
+  panic("ialloc: no inodes");
 }
+
 
 // Copy a modified in-memory inode to disk.
 // Must be called after every change to an ip->xxx field

@@ -21,6 +21,9 @@
 #define UART0 0x10000000L
 #define UART0_IRQ 10
 
+
+
+
 // virtio mmio interface
 #define VIRTIO0 0x10001000
 #define VIRTIO0_IRQ 1
@@ -41,6 +44,7 @@
 
 // map the trampoline page to the highest address,
 // in both user and kernel space.
+#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 #define TRAMPOLINE (MAXVA - PGSIZE)
 
 // map kernel stacks beneath the trampoline,
